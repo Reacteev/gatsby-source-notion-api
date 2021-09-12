@@ -78,6 +78,18 @@ exports.notionBlockToMarkdown = (block, lowerTitleLevel, depth = 0) =>
 				.concat("</details>")
 		}
 
+		if (childBlock.type == "image") {
+			const caption = childBlock.image.caption;
+			return acc
+				.concat("![")
+				.concat(caption ? caption.reduce((txt, blk) => txt.concat(blk.plain_text), "") : "")
+				.concat("](")
+				.concat(childBlock.image.file.url)
+				.concat(")")
+				.concat(EOL_MD)
+				.concat(childBlocksString)
+		}
+
 		if (childBlock.type == "unsupported") {
 			return acc
 				.concat(`<!-- This block is not supported by Notion API yet. -->`)
