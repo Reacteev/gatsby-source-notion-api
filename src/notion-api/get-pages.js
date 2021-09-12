@@ -2,7 +2,7 @@ const fetch = require("node-fetch")
 const { errorMessage } = require("../error-message")
 const { getBlocks } = require("./get-blocks")
 
-exports.getPages = async ({ token, databaseId, notionVersion = "2021-05-13" }, reporter) => {
+exports.getPages = async ({ token, databaseId, notionVersion = "2021-08-16" }, reporter) => {
 	let hasMore = true
 	let startCursor = ""
 	const url = `https://api.notion.com/v1/databases/${databaseId}/query`
