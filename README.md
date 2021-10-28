@@ -80,6 +80,7 @@ plugins: [
 		options: {
 			token: `$INTEGRATION_TOKEN`,
 			databaseId: `$DATABASE_ID`,
+      nodeSuffix: '', // Optional
 			propsToFrontmatter: true,
 			lowerTitleLevel: true,
 		},
@@ -109,7 +110,7 @@ Push headings one level down. # becomes ##, ## becomes ###, ### becomes ####. No
 
 ## How to query for nodes
 
-You can query for pages with `notion` or grab all of them with `allNotion`. The raw content of the
+You can query for pages with `notion + your nodeSuffix` or grab all of them with `allNotion +  your nodeSuffix`. The raw content of the
 page is available under `raw` property.
 
 ### Query for all nodes
@@ -251,8 +252,6 @@ exports.onCreateNode = async ({ node, actions: { createNode }, createNodeId, get
 
 - Due to the fact that Notion API only appeared recently, and it is still in beta, some blocks are
   marked "unsupported". Among others, images cannot be fetched for now
-- Currently, `gatsby-source-notion-api` can only work with one provided database. In further
-  releases, all databases reachable by the Integration will be available for querying
 - ~~Nested blocks are currently skipped. E.g. if a list item has a nested sublist, it's contents will
   be omitted. This will be fixed in the nearest releases~~ Nested blocks are supported as of `0.4.0`!
 - ~~Only raw content is available. Raw meaning whatever Notion returns. Further releases will aim at
