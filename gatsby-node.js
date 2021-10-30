@@ -8,7 +8,7 @@ const NOTION_NODE_TYPE = "Notion"
 
 exports.sourceNodes = async (
 	{ actions, createContentDigest, createNodeId, reporter },
-	{ token, databaseId, nodeSuffix = '', propsToFrontmatter = true, lowerTitleLevel = true, frontmatterMapping = (frontmatter) => frontmatter, filter },
+	{ token, databaseId, nodeSuffix = '', propsToFrontmatter = true, lowerTitleLevel = true, frontmatterMapping = (frontmatter) => frontmatter, filter, absolutePath = () => 'index.fr.md' },
 ) => {
 	const pages = await getPages({ token, databaseId, filter }, reporter)
 
@@ -48,7 +48,7 @@ exports.sourceNodes = async (
 					content: markdown,
 					contentDigest: createContentDigest(page),
 				},
-				absolutePath: "index.fr.md",
+				absolutePath: absolutePath(properties),
 			});
 		}
 	})
