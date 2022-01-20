@@ -7,11 +7,12 @@ exports.notionBlockToMarkdown = (block, lowerTitleLevel, depth = 0) =>
 		let childBlocksString = ""
 
 		if (childBlock.has_children) {
-			childBlocksString = "  "
-				.repeat(depth)
-				.concat(childBlocksString)
-				.concat(this.notionBlockToMarkdown(childBlock, lowerTitleLevel, depth + 2))
-				.concat(EOL_MD)
+			const indentString = " ".repeat(depth + 2)
+			childBlocksString = this.notionBlockToMarkdown(childBlock, lowerTitleLevel, depth + 2)
+				.split(EOL_MD)
+				.map((line) => indentString + line)
+				.join(EOL_MD)
+				.concat(EOL_MD);
 		}
 
 		if (childBlock.type == "paragraph") {
