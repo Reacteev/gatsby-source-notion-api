@@ -28,6 +28,7 @@ exports.notionBlockToMarkdown = (block, lowerTitleLevel, depth = 0) =>
 				block.paragraph.text[0].plain_text.startsWith("```")
 
 			return acc
+				.concat(EOL_MD)
 				.concat(p)
 				.concat(isTableRow || isCodeSnippetLine ? EOL_MD : EOL_MD.concat(EOL_MD))
 				.concat(childBlocksString)
