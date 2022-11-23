@@ -82,7 +82,7 @@ exports.notionBlockToMarkdown = (block, lowerTitleLevel, depth = 0) =>
 
 		if (childBlock.type == "image") {
 			const caption = childBlock.image.caption;
-			const imageUrl = block.image.type == "external" ? block.image.external.url : block.image.file.url
+			const imageUrl = childBlock.image.type == "external" ? childBlock.image.external.url : childBlock.image.file.url
 			return acc
 				.concat("![")
 				.concat(caption ? caption.reduce((txt, blk) => txt.concat(blk.plain_text), "") : "")
