@@ -8,9 +8,9 @@ const NOTION_NODE_TYPE = "Notion"
 
 exports.sourceNodes = async (
 	{ actions, createContentDigest, createNodeId, reporter, cache },
-	{ token, databaseId, nodeSuffix = '', propsToFrontmatter = true, lowerTitleLevel = true, frontmatterMapping = (frontmatter) => frontmatter },
+	{ token, databaseId, nodeSuffix = '', propsToFrontmatter = true, lowerTitleLevel = true, frontmatterMapping = (frontmatter) => frontmatter, filter },
 ) => {
-	const pages = await getPages({ token, databaseId }, reporter, cache)
+	const pages = await getPages({ token, databaseId, filter }, reporter, cache)
 
 	pages.forEach((page) => {
 		const title = getNotionPageTitle(page)
