@@ -8,7 +8,7 @@ const NOTION_NODE_TYPE = "Notion"
 
 exports.sourceNodes = async (
 	{ actions, createContentDigest, createNodeId, reporter, cache },
-	{ token, databaseId, propsToFrontmatter = true, lowerTitleLevel = true },
+	{ token, databaseId, propsToFrontmatter = true, lowerTitleLevel = true, frontmatterMapping = (frontmatter) => frontmatter } },
 ) => {
 	const pages = await getPages({ token, databaseId }, reporter, cache)
 
@@ -18,35 +18,38 @@ exports.sourceNodes = async (
 		let markdown = notionBlockToMarkdown(page, lowerTitleLevel)
 
 		if (propsToFrontmatter) {
-			const frontmatter = Object.keys(properties).reduce(
+			const frontmatter = frontmatterMapping(Object.keys(properties).reduce(
 				(acc, key) => ({
 					...acc,
-					[key]: properties[key].value.remoteImage || properties[key].value,
+					[key]: properties[key].value?.remoteImage ?? properties[key].value,
 				}),
-				{ title },
-			)
+				{ title, cover: page.cover },
+			))
 
 			markdown = "---\n".concat(YAML.stringify(frontmatter)).concat("\n---\n\n").concat(markdown)
 		}
 
-		actions.createNode({
-			id: createNodeId(`${NOTION_NODE_TYPE}-${page.id}`),
-			title,
-			properties,
-			archived: page.archived,
-			createdAt: page.created_time,
-			updatedAt: page.last_edited_time,
-			markdownString: markdown,
-			raw: page,
-			json: JSON.stringify(page),
-			parent: null,
-			children: [],
-			internal: {
-				type: NOTION_NODE_TYPE,
-				mediaType: "text/markdown",
-				content: markdown,
-				contentDigest: createContentDigest(page),
-			},
-		})
+    if (title && title !== '') {
+      actions.createNode({
+        id: createNodeId(`${NOTION_NODE_TYPE}-${page.id}`),
+        title,
+        properties,
+        archived: page.archived,
+        createdAt: page.created_time,
+        updatedAt: page.last_edited_time,
+        markdownString: markdown,
+        raw: page,
+        json: JSON.stringify(page),
+        parent: null,
+        children: [],
+        internal: {
+          type: NOTION_NODE_TYPE,
+          mediaType: "text/markdown",
+          content: markdown,
+          contentDigest: createContentDigest(page),
+        },
+        absolutePath: "index.fr.md",
+      })
+    }
 	})
 }
