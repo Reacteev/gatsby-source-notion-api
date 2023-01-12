@@ -8,7 +8,7 @@ const NOTION_NODE_TYPE = "Notion"
 
 exports.sourceNodes = async (
 	{ actions, createContentDigest, createNodeId, reporter, cache },
-	{ token, databaseId, propsToFrontmatter = true, lowerTitleLevel = true, frontmatterMapping = (frontmatter) => frontmatter } },
+	{ token, databaseId, nodeSuffix = '', propsToFrontmatter = true, lowerTitleLevel = true, frontmatterMapping = (frontmatter) => frontmatter },
 ) => {
 	const pages = await getPages({ token, databaseId }, reporter, cache)
 
@@ -31,7 +31,7 @@ exports.sourceNodes = async (
 
     if (title && title !== '') {
       actions.createNode({
-        id: createNodeId(`${NOTION_NODE_TYPE}-${page.id}`),
+        id: createNodeId(`${NOTION_NODE_TYPE}${nodeSuffix}-${page.id}`),
         title,
         properties,
         archived: page.archived,
@@ -43,7 +43,7 @@ exports.sourceNodes = async (
         parent: null,
         children: [],
         internal: {
-          type: NOTION_NODE_TYPE,
+          type: `${NOTION_NODE_TYPE}${nodeSuffix}`,
           mediaType: "text/markdown",
           content: markdown,
           contentDigest: createContentDigest(page),
