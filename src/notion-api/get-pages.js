@@ -17,7 +17,7 @@ async function fetchPageChildren({ page, token, notionVersion }, reporter, cache
 }
 
 exports.getPages = async ({ token, databaseId, notionVersion = "2021-08-16", filter }, reporter, cache) => {
-	let hasMore = true
+	let hasMore = !!databaseId
 	let startCursor = ""
 	const url = `https://api.notion.com/v1/databases/${databaseId}/query`
 	const body = {
