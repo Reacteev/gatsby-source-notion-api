@@ -2,6 +2,7 @@ const { blockToString } = require("../block-to-string")
 
 const EOL_MD = "\n"
 const DOUBLE_EOL_MD = EOL_MD.repeat(2)
+const TABLE_HEADER_DELIM = "-".repeat(3)
 
 // Inserts the string at the beginning of every line of the content. If the useSpaces flag is set to
 // true, the lines after the first will instead be prepended with two spaces.
@@ -158,6 +159,28 @@ exports.notionBlockToMarkdown = (block, lowerTitleLevel) => {
 			"</Column>",
 			EOL_MD
 		].join("")
+	}
+
+	// Table
+	if (block.type == "table") {
+		const tableBlock = block[block.type];
+		const tableHeaderRow = ["| ", new Array(tableBlock.table_width).fill(TABLE_HEADER_DELIM).join(" | "), " |"].join("");
+		const [head, ...tail] = markdown.split(EOL_MD);
+		if (tableBlock.has_column_header) {
+			markdown = [head, tableHeaderRow, ...tail].join(EOL_MD);
+		} else {
+			markdown = ["| ".repeat(tableBlock.table_width) + "|", tableHeaderRow, head, ...tail].join(EOL_MD);
+		}
+		return [EOL_MD, markdown, EOL_MD].join("")
+	}
+
+	// Table row
+	if (block.type == "table_row") {
+		childMarkdown = (block.table_row.cells ?? [])
+			.map((cell) => blockToString(cell).trim())
+			.join(" | ")
+			.trim()
+		return ["| ", childMarkdown, " |", EOL_MD].join("")
 	}
 
 	// Unsupported types.
