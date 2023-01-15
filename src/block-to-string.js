@@ -27,7 +27,9 @@ const annotateUnderline = ifTrue(
 )
 const annotateColor = ifTrue(
 	({ color }) => color != "default",
-	({ content, color }) => ({ content: `<span notion-color="${color}">${content}</span>` }),
+	({ content, color }) => ({
+    content: `<span style="${color.endsWith("_background") ? "background-color:" + color.replace('_background', '') : "color:" + color}">${content}</span>`
+  }),
 	id,
 )
 const annotateLink = ifTrue(

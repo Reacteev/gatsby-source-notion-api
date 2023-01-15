@@ -10,6 +10,7 @@
 	"scripts": {
 		"test": "ava",
 		"test:cover": "nyc ava",
+		"test:watch": "ava --watch",
 		"format": "prettier --write *.{js,json,md} **/*.{js,json,md} **/**/*.{js,json,md}",
 		"lint": "prettier -c *.{js,json,md} **/*.{js,json,md} **/**/*.{js,json,md}",
 		"commit": "gitmoji --commit",
@@ -61,7 +62,8 @@
 	},
 	"ava": {
 		"files": [
-			"test/**/*"
+			"test/**/*",
+      "src/**/*.test.js"
 		],
 		"extensions": [
 			"js"
