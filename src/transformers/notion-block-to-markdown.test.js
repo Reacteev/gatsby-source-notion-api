@@ -42,15 +42,18 @@ test('bulleted_list_item', t => {
     { type: "bulleted_list_item", bulleted_list_item: { text: [{ text: { content: "bulleted_list_item" }, annotations: { color: "default" }}]},
       children: [{type: "bulleted_list_item", bulleted_list_item: { text: [{ text: { content: "bulleted_list_item_children" }, annotations: { color: "default" }}]}}]
     }
-  ), "* bulleted_list_item\n  \n  * bulleted_list_item_children\n");
+  ), "* bulleted_list_item\n\t\n\t* bulleted_list_item_children\n");
 });
 
 test('numbered_list_item', t => {
   t.is(notionBlockToMarkdown(
     { type: "numbered_list_item", numbered_list_item: { text: [{ text: { content: "numbered_list_item" }, annotations: { color: "default" }}]},
-      children: [{type: "numbered_list_item", numbered_list_item: { text: [{ text: { content: "numbered_list_item_children" }, annotations: { color: "default" }}]}}]
+      children: [
+        {type: "numbered_list_item", numbered_list_item: { text: [{ text: { content: "numbered_list_item_children_1" }, annotations: { color: "default" }}]}},
+        {type: "numbered_list_item", numbered_list_item: { text: [{ text: { content: "numbered_list_item_children_2" }, annotations: { color: "default" }}]}}
+      ]
     }
-  ), "1. numbered_list_item\n  \n  1. numbered_list_item_children\n");
+  ), "1. numbered_list_item\n\t\n\t1. numbered_list_item_children_1\n\t1. numbered_list_item_children_2\n");
 });
 
 test('code', t => {

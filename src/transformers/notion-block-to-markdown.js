@@ -1,6 +1,7 @@
 const { blockToString } = require("../block-to-string")
 
 const EOL_MD = "\n"
+const TAB_MD = "\t";
 const DOUBLE_EOL_MD = EOL_MD.repeat(2)
 const TABLE_HEADER_DELIM = "-".repeat(3)
 
@@ -12,7 +13,7 @@ function prependToLines(content, string, useSpaces = true) {
 	return [
 		`${string} ${head}`,
 		...tail.map((line) => {
-			return `${useSpaces ? " " : string} ${line}`
+			return `${useSpaces ? TAB_MD : string}${line}`
 		}),
 	].join("\n")
 }
