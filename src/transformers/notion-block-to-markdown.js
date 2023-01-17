@@ -161,17 +161,23 @@ exports.notionBlockToMarkdown = (block, lowerTitleLevel) => {
 		].join("")
 	}
 
+  const addBoldInHeaderCell = function(row) {
+    const cells = row
+      .match(/[^\|]*/g)
+      .filter(cell => cell.length > 0)
+      .map((cell, index) => index == 0 ? ["**", cell.trim(), "**"].join("") : cell.trim());
+    return ["| ", cells.join(" | "), " |"].join("");
+  }
+
 	// Table
 	if (block.type == "table") {
 		const tableBlock = block[block.type];
 		const tableHeaderRow = ["| ", new Array(tableBlock.table_width).fill(TABLE_HEADER_DELIM).join(" | "), " |"].join("");
 		const [head, ...tail] = markdown.split(EOL_MD);
-		if (tableBlock.has_column_header) {
-			markdown = [head, tableHeaderRow, ...tail].join(EOL_MD);
-		} else {
-			markdown = ["| ".repeat(tableBlock.table_width) + "|", tableHeaderRow, head, ...tail].join(EOL_MD);
-		}
-		return [EOL_MD, markdown, EOL_MD].join("")
+    // (No header) or (row header) => Only tail
+    // (column header) or (column and row header) => Add bold in first row cell
+		const tableRow = tableBlock.has_column_header ? tail.map(row => addBoldInHeaderCell(row)) : tail;
+    return [EOL_MD, [head, tableHeaderRow, ...tableRow].join(EOL_MD), EOL_MD].join("")
 	}
 
 	// Table row
