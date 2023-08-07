@@ -24,7 +24,7 @@ exports.sourceNodes = async (
 					[key]: properties[key].value?.remoteImage ?? properties[key].value,
 				}),
 				{ title, cover: page.cover },
-			))
+			), reporter)
 
 			markdown = "---\n".concat(YAML.stringify(frontmatter)).concat("\n---\n\n").concat(markdown)
 		}
