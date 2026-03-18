@@ -53,6 +53,7 @@ exports.getPages = async ({ token, databaseId, notionVersion = "2021-08-16", fil
 				pages.push(page)
 			}
 		} catch (e) {
+			console.error('[gatsby-source-notion-api] Error fetching pages from', url, e)
 			reporter.panic(errorMessage)
 		}
 	}

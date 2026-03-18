@@ -35,6 +35,7 @@ exports.getBlocks = async ({ id, notionVersion, token }, reporter) => {
 			startCursor = result.next_cursor
 			hasMore = result.has_more
 		} catch (e) {
+			console.error('[gatsby-source-notion-api] Error fetching blocks', e)
 			reporter.panic(errorMessage)
 		}
 	}
