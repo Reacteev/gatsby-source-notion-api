@@ -8,6 +8,37 @@ const YAML = require("yaml")
 
 const NOTION_NODE_TYPE = "Notion"
 
+// Escape characters that MDX v2 interprets as JSX (< and {) in markdown body.
+// Preserves code blocks (``` and inline `), HTML comments, and frontmatter.
+function escapeMdxSyntax(markdown) {
+	const lines = markdown.split('\n')
+	let inCodeBlock = false
+	let inFrontmatter = false
+	let frontmatterCount = 0
+
+	return lines.map((line) => {
+		if (line.trim() === '---') {
+			frontmatterCount++
+			if (frontmatterCount <= 2) inFrontmatter = !inFrontmatter
+			return line
+		}
+		if (inFrontmatter) return line
+
+		if (line.trim().startsWith('```')) {
+			inCodeBlock = !inCodeBlock
+			return line
+		}
+		if (inCodeBlock) return line
+
+		// Escape < that is not part of a valid JSX tag (MDX v2 treats < as JSX)
+		// Keep: <br>, <br/>, <img ...>, <sup>, <sub>, </tag>
+		// Escape: <!-- -->, <email>, <3, x < y, <!DOCTYPE>, etc.
+		return line.replace(/<!--[\s\S]*?-->/g, '') // Remove HTML comments entirely
+			.replace(/<(?![a-zA-Z/])/g, '\\<')
+			.replace(/(?<!\\)\{(?![/\*%])/g, '\\{')
+	}).join('\n')
+}
+
 // Directory where Notion content is written as .md files for gatsby-plugin-mdx v5.
 // MDX v5 only processes File nodes sourced by gatsby-source-filesystem.
 const CONTENT_DIR = path.join(process.cwd(), '.cache', 'notion-content')
@@ -43,6 +74,8 @@ exports.onPreBootstrap = async (
 		}
 
 		if (title && title !== '') {
+			// Escape MDX v2 syntax characters in the markdown body
+			markdown = escapeMdxSyntax(markdown)
 			const fileName = absolutePath(properties)
 			const pageDir = path.join(sourceDir, page.id)
 			const filePath = path.join(pageDir, fileName)
