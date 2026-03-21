@@ -30,12 +30,23 @@ function escapeMdxSyntax(markdown) {
 		}
 		if (inCodeBlock) return line
 
-		// Escape < that is not part of a valid JSX tag (MDX v2 treats < as JSX)
-		// Keep: <br>, <br/>, <img ...>, <sup>, <sub>, </tag>
-		// Escape: <!-- -->, <email>, <3, x < y, <!DOCTYPE>, etc.
-		return line.replace(/<!--[\s\S]*?-->/g, '') // Remove HTML comments entirely
+		// Replace Notion-specific JSX components with div (MDX v2 requires all components to be defined)
+		// Convert: <ColumnList>, <Column>, <IssueLink> etc. to <div>
+		return line.replace(/<(\/?)(?:ColumnList|Column|IssueLink)(\s[^>]*)?>/g, '<$1div>')
+			// Remove HTML comments entirely
+			.replace(/<!--[\s\S]*?-->/g, '')
 			.replace(/<(?![a-zA-Z/])/g, '\\<')
-			.replace(/(?<!\\)\{(?![/\*%])/g, '\\{')
+			// Escape { that MDX v2 interprets as JSX expressions (must run before style conversion)
+			.replace(/(?<!\\)\{/g, '\\{')
+			// Convert HTML style="prop:val; ..." to JSX style={{prop: 'val', ...}}
+			.replace(/style="([^"]*)"/g, (_, css) => {
+				const jsxProps = css.split(';').filter(Boolean).map((decl) => {
+					const [prop, ...valParts] = decl.split(':')
+					const camelProp = prop.trim().replace(/-([a-z])/g, (__, c) => c.toUpperCase())
+					return `${camelProp}: '${valParts.join(':').trim()}'`
+				}).join(', ')
+				return `style={{${jsxProps}}}`
+			})
 	}).join('\n')
 }
 
