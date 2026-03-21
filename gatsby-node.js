@@ -6,7 +6,47 @@ const { getNotionPageProperties } = require("./src/transformers/get-page-propert
 const { getNotionPageTitle } = require("./src/transformers/get-page-title")
 const YAML = require("yaml")
 
+const fetch = require("node-fetch")
+
 const NOTION_NODE_TYPE = "Notion"
+
+// Download remote images referenced in markdown and replace URLs with local paths.
+// Notion uses signed S3 URLs that expire, so images must be downloaded at build time.
+async function downloadImages(markdown, pageDir) {
+	const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g
+	let match
+	let result = markdown
+	let imageIndex = 0
+
+	const downloads = []
+	while ((match = imageRegex.exec(markdown)) !== null) {
+		const [fullMatch, alt, url] = match
+		const ext = url.match(/\.(jpe?g|png|gif|webp|svg)/i)?.[1] || 'jpg'
+		const localName = `image-${imageIndex++}.${ext}`
+		const localPath = path.join(pageDir, localName)
+		downloads.push({ fullMatch, alt, url, localName, localPath })
+	}
+
+	await Promise.all(downloads.map(async ({ url, localPath }) => {
+		try {
+			const response = await fetch(url)
+			if (response.ok) {
+				const buffer = await response.buffer()
+				fs.writeFileSync(localPath, buffer)
+			}
+		} catch (e) {
+			// Image download failed — URL will remain in markdown
+		}
+	}))
+
+	for (const { fullMatch, alt, localName, localPath } of downloads) {
+		if (fs.existsSync(localPath)) {
+			result = result.replace(fullMatch, `![${alt}](./${localName})`)
+		}
+	}
+
+	return result
+}
 
 // Escape characters that MDX v2 interprets as JSX (< and {) in markdown body.
 // Preserves code blocks (``` and inline `), HTML comments, and frontmatter.
@@ -30,11 +70,12 @@ function escapeMdxSyntax(markdown) {
 		}
 		if (inCodeBlock) return line
 
-		// Replace Notion-specific JSX components with div (MDX v2 requires all components to be defined)
-		// Convert: <ColumnList>, <Column>, <IssueLink> etc. to <div>
-		return line.replace(/<(\/?)(?:ColumnList|Column|IssueLink)(\s[^>]*)?>/g, '<$1div>')
+		return line
+			// Remove unsupported Notion components
+			.replace(/<\/?IssueLink(\s[^>]*)?>/g, '')
 			// Remove HTML comments entirely
 			.replace(/<!--[\s\S]*?-->/g, '')
+			// Escape < that is not part of a valid tag
 			.replace(/<(?![a-zA-Z/])/g, '\\<')
 			// Escape { that MDX v2 interprets as JSX expressions (must run before style conversion)
 			.replace(/(?<!\\)\{/g, '\\{')
@@ -47,6 +88,11 @@ function escapeMdxSyntax(markdown) {
 				}).join(', ')
 				return `style={{${jsxProps}}}`
 			})
+			// Replace Notion layout components with styled divs (after { escaping to keep {{}} intact)
+			.replace(/<ColumnList>/g, '<div style={{display: "flex", gap: "1rem"}}>')
+			.replace(/<\/ColumnList>/g, '</div>')
+			.replace(/<Column>/g, '<div style={{flex: 1}}>')
+			.replace(/<\/Column>/g, '</div>')
 	}).join('\n')
 }
 
@@ -67,7 +113,7 @@ exports.onPreBootstrap = async (
 
 	const processedPages = []
 
-	pages.forEach((page) => {
+	for (const page of pages) {
 		const title = getNotionPageTitle(page)
 		const properties = getNotionPageProperties(page)
 		let markdown = notionBlockToMarkdown(page, lowerTitleLevel)
@@ -91,11 +137,15 @@ exports.onPreBootstrap = async (
 			const pageDir = path.join(sourceDir, page.id)
 			const filePath = path.join(pageDir, fileName)
 			fs.mkdirSync(pageDir, { recursive: true })
+
+			// Download remote images to local files (Notion S3 URLs expire)
+			markdown = await downloadImages(markdown, pageDir)
+
 			fs.writeFileSync(filePath, markdown)
 
 			processedPages.push({ page, title, properties, markdown, fileName })
 		}
-	})
+	}
 
 	// Cache for sourceNodes
 	pagesByConfig.set(databaseId, processedPages)
