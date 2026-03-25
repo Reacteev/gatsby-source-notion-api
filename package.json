@@ -63,7 +63,7 @@
 	"ava": {
 		"files": [
 			"test/**/*",
-      "src/**/*.test.js"
+			"src/**/*.test.js"
 		],
 		"extensions": [
 			"js"

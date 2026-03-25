@@ -159,7 +159,7 @@ exports.sourceNodes = async (
 
 	processedPages.forEach(({ page, title, properties, markdown }) => {
 		actions.createNode({
-			id: createNodeId(`${NOTION_NODE_TYPE}${nodeSuffix}-${page.id}`),
+			id: `${NOTION_NODE_TYPE}${nodeSuffix}-${page.id}`,
 			title,
 			properties,
 			archived: page.archived,
