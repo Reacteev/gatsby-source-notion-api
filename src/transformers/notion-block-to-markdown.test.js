@@ -99,15 +99,16 @@ test('table column header', t => {
   table.table.has_column_header = true;
   table.table.has_row_header = false;
   t.is(notionBlockToMarkdown(table),
-    // Not possible not to have header without formating, Notion has more feature on it.
-    "\n| Header column and row | Header column A | Header column B |\n| --- | --- | --- |\n| **Header row 1** | Cell A1 | Cell B1 |\n| **Header row 2** | Cell A2 | Cell B2 |\n"
+    // has_column_header => GFM's native header row (first row), no first-column bolding.
+    "\n| Header column and row | Header column A | Header column B |\n| --- | --- | --- |\n| Header row 1 | Cell A1 | Cell B1 |\n| Header row 2 | Cell A2 | Cell B2 |\n"
   );
 });
 test('table row header', t => {
   table.table.has_column_header = false;
   table.table.has_row_header = true;
   t.is(notionBlockToMarkdown(table),
-    "\n| Header column and row | Header column A | Header column B |\n| --- | --- | --- |\n| Header row 1 | Cell A1 | Cell B1 |\n| Header row 2 | Cell A2 | Cell B2 |\n"
+    // has_row_header => first column is a header, emulated by bolding the first cell of each row.
+    "\n| Header column and row | Header column A | Header column B |\n| --- | --- | --- |\n| **Header row 1** | Cell A1 | Cell B1 |\n| **Header row 2** | Cell A2 | Cell B2 |\n"
   );
 });
 test('table column and row header', t => {

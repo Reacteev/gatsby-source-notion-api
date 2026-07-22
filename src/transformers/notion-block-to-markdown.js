@@ -162,23 +162,25 @@ exports.notionBlockToMarkdown = (block, lowerTitleLevel) => {
 		].join("")
 	}
 
-  const addBoldInHeaderCell = function(row) {
-    const cells = row
-      .match(/[^\|]*/g)
-      .filter(cell => cell.length > 0)
-      .map((cell, index) => index == 0 ? ["**", cell.trim(), "**"].join("") : cell.trim());
-    return ["| ", cells.join(" | "), " |"].join("");
-  }
+	const addBoldInHeaderCell = function (row) {
+		const cells = row
+			.match(/[^\|]*/g)
+			.filter(cell => cell.length > 0)
+			.map((cell, index) => index == 0 ? ["**", cell.trim(), "**"].join("") : cell.trim());
+		return ["| ", cells.join(" | "), " |"].join("");
+	}
 
 	// Table
 	if (block.type == "table") {
 		const tableBlock = block[block.type];
 		const tableHeaderRow = ["| ", new Array(tableBlock.table_width).fill(TABLE_HEADER_DELIM).join(" | "), " |"].join("");
 		const [head, ...tail] = markdown.split(EOL_MD);
-    // (No header) or (row header) => Only tail
-    // (column header) or (column and row header) => Add bold in first row cell
-		const tableRow = tableBlock.has_column_header ? tail.map(row => addBoldInHeaderCell(row)) : tail;
-    return [EOL_MD, [head, tableHeaderRow, ...tableRow].join(EOL_MD), EOL_MD].join("")
+		// GFM always renders the first row as the header (handled by `head` +
+		// tableHeaderRow), which covers Notion's has_column_header. GFM has no
+		// native "header column", so has_row_header (first column is a header) is
+		// emulated by bolding the first cell of every row.
+		const tableRow = tableBlock.has_row_header ? tail.map(addBoldInHeaderCell) : tail;
+		return [EOL_MD, [head, tableHeaderRow, ...tableRow].join(EOL_MD), EOL_MD].join("")
 	}
 
 	// Table row
